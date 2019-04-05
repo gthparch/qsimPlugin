@@ -5,6 +5,7 @@
     "devices": ["virtio-scsi-device,id=scsi", "scsi-hd,drive=coreimg",
                 "virtio-net-device,netdev=unet"],
     "netdev": "user,id=unet",
+    "portNumber": "2851",
     "append": "root=/dev/sda2",
     "nographic" : true,
     "driveParam": "id=coreimg,cache=unsafe,if=none"

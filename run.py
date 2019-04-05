@@ -85,8 +85,11 @@ def main():
             execStr = execStr + " -device {} ".format(device)
 
     netdev = configJson.get('netdev')
+    portNumber = configJson.get('portNumber')
+    if(portNumber == None):
+        portNumber = 2222
     if(netdev != None):
-        execStr = execStr + " -netdev {} ".format(netdev)
+        execStr = execStr + " -netdev {},hostfwd=tcp::{}-:22".format(netdev,portNumber)
     
     append = configJson.get('append')
     if(append != None):
@@ -111,7 +114,17 @@ def main():
         execStr = execStr + " -drive file={}/{},{}".format(imgDir, drive,driveParam)
     
     #print(execStr)
-    os.system(execStr)
+    #os.system(execStr+"&")
+    password = imgConfigJson.get('password')
+    username = imgConfigJson.get('username')
+    passFileName = "password.txt"
+    passfile = open(passFileName, "a")
+    passfile.write(password)
+    passfile.close()
+    #ssh qsim@0.0.0.0 -p 2222
+    sshExec = "sshpass -f  {} ssh {}@0.0.0.0 -p {}".format(passFileName, username,portNumber)
+    #print(sshExec)
+    os.system(sshExec)
 if __name__ == "__main__":
     args = parser.parse_args()
     args.func(args)
