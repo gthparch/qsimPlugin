@@ -18,7 +18,7 @@ import argparse
 import json
 import pprint
 import os.path
-
+import socket
 arm64 = {'cpu': 'cortex-a57', 'arch': 'aarch64', 'path': 'buildDirARM64/aarch64-softmmu/'}
 x86 = {'cpu': '', 'arch': 'i386', 'path': 'buildDirX86/i386-softmmu/'}
 arcTypes = {'arm64': arm64, 'i386': x86 }
@@ -28,6 +28,7 @@ configPath = ''
 imgConfigPath = ''
 pickedArch = ''
 benchmarkPath = ''
+pluginPath = ''
 def choose(args):
     global configPath
     configPath = args.config
@@ -37,12 +38,15 @@ def choose(args):
     imgConfigPath = args.imgconfig
     global benchmarkPath
     benchmarkPath = args.benchmark
+    global pluginPath
+    pluginPath = args.plugin
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--arch', default="arm64")
 parser.add_argument('--config', default="config.json")
 parser.add_argument('--imgconfig',default='')
 parser.add_argument('--benchmark',default='')
+parser.add_argument('--plugin',default='')
 parser.set_defaults(func=choose)
 
 def main():
@@ -71,6 +75,9 @@ def main():
     if(benchmarkPath == '' or  not os.path.isdir(benchmarkPath)):
         print "path to benchmark is missing or not a directory"
         return
+    if(pluginPath == '' or not os.path.isfile(pluginPath)):
+        print "path to plugin.so is missing or not a file"
+        return
 
     execStr = "./{}qemu-system-{} -cpu {} ".format(arch['path'], arch['arch'],arch['cpu'])
     
@@ -95,6 +102,12 @@ def main():
     portNumber = configJson.get('portNumber')
     if(portNumber == None):
         portNumber = 2222
+    else:
+        try:
+            portNumber = int(portNumber)
+        except ValueError:
+            print("port number isn not an int and can not be converted to one!")
+            return
     
     remoteBenchmarkDir = configJson.get('remoteBenchmarkDir')
     if (remoteBenchmarkDir == None) :
@@ -129,19 +142,26 @@ def main():
     if(drive != None and driveParam != None):
         execStr = execStr + " -drive file={}/{},{}".format(imgDir, drive,driveParam)
     
+    execStr = execStr + " --plugin file={}".format(pluginPath)
     print(execStr)
-    #os.system(execStr+"&")
+    os.system(execStr+"&")
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    while( sock.connect_ex(('0.0.0.0',portNumber)) !=0):
+        continue
+    print("vm is booted")
+    sock.close()
     password = imgConfigJson.get('password')
     username = imgConfigJson.get('username')
-    #ssh qsim@0.0.0.0 -p 2222
-    #sshExec = "sshpass -p  {} ssh {}@0.0.0.0 -p {}".format(password, username,portNumber)
-    #print(sshExec)
-    #os.system(sshExec)
+    # ssh qsim@0.0.0.0 -p 2222
     scpExec = "sshpass -p  {} scp -P {} -r {} {}@0.0.0.0:{}".format(password, portNumber, benchmarkPath, username, remoteBenchmarkDir)
     print(scpExec)
     os.system(scpExec)
     #ssh qsim@0.0.0.0 -p 2222
-    sshExec = "sshpass -p  {} ssh {}@0.0.0.0 -p {} './{}/{}/{}' ".format(password, username,portNumber,remoteBenchmarkDir,os.path.basename(benchmarkPath),remotescriptExec)
+    stripBmPath = benchmarkPath
+    if(benchmarkPath[-1] == '/'):
+        stripBmPath = stripBmPath[:-1]
+    stripBmPath = os.path.basename(stripBmPath)
+    sshExec = "sshpass -p  {} ssh {}@0.0.0.0 -p {} 'cd {}/{} ; ./{}' ".format(password, username,portNumber,remoteBenchmarkDir,stripBmPath,remotescriptExec)
     print(sshExec)
     os.system(sshExec)
 
