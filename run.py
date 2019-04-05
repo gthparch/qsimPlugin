@@ -100,6 +100,10 @@ def main():
     if (remoteBenchmarkDir == None) :
         remoteBenchmarkDir = ""
 
+    remotescriptExec = configJson.get('remotescriptExec')
+    if (remotescriptExec == None) :
+        remotescriptExec = "runner.sh"
+
     if(netdev != None):
         execStr = execStr + " -netdev {},hostfwd=tcp::{}-:22".format(netdev,portNumber)
     
@@ -125,8 +129,7 @@ def main():
     if(drive != None and driveParam != None):
         execStr = execStr + " -drive file={}/{},{}".format(imgDir, drive,driveParam)
     
-
-    #print(execStr)
+    print(execStr)
     #os.system(execStr+"&")
     password = imgConfigJson.get('password')
     username = imgConfigJson.get('username')
@@ -135,8 +138,13 @@ def main():
     #print(sshExec)
     #os.system(sshExec)
     scpExec = "sshpass -p  {} scp -P {} -r {} {}@0.0.0.0:{}".format(password, portNumber, benchmarkPath, username, remoteBenchmarkDir)
-    #print(scpExec)
+    print(scpExec)
     os.system(scpExec)
+    #ssh qsim@0.0.0.0 -p 2222
+    sshExec = "sshpass -p  {} ssh {}@0.0.0.0 -p {} './{}/{}/{}' ".format(password, username,portNumber,remoteBenchmarkDir,os.path.basename(benchmarkPath),remotescriptExec)
+    print(sshExec)
+    os.system(sshExec)
+
 if __name__ == "__main__":
     args = parser.parse_args()
     args.func(args)

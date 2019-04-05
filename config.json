@@ -9,5 +9,6 @@
     "append": "root=/dev/sda2",
     "nographic" : true,
     "driveParam": "id=coreimg,cache=unsafe,if=none",
-    "remoteBenchmarkDir": "benchmark"
+    "remoteBenchmarkDir": "benchmark",
+    "remotescriptExec" : "runner.sh"
 }
