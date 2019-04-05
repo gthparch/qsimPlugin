@@ -27,7 +27,7 @@ arch = arm64
 configPath = ''
 imgConfigPath = ''
 pickedArch = ''
-
+benchmarkPath = ''
 def choose(args):
     global configPath
     configPath = args.config
@@ -35,11 +35,14 @@ def choose(args):
     pickedArch = args.arch
     global imgConfigPath
     imgConfigPath = args.imgconfig
+    global benchmarkPath
+    benchmarkPath = args.benchmark
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--arch', default="arm64")
 parser.add_argument('--config', default="config.json")
 parser.add_argument('--imgconfig',default='')
+parser.add_argument('--benchmark',default='')
 parser.set_defaults(func=choose)
 
 def main():
@@ -65,6 +68,10 @@ def main():
         print("need images to run")
         return
     
+    if(benchmarkPath == '' or  not os.path.isdir(benchmarkPath)):
+        print "path to benchmark is missing or not a directory"
+        return
+
     execStr = "./{}qemu-system-{} -cpu {} ".format(arch['path'], arch['arch'],arch['cpu'])
     
     memory = configJson.get('memory')
@@ -88,6 +95,11 @@ def main():
     portNumber = configJson.get('portNumber')
     if(portNumber == None):
         portNumber = 2222
+    
+    remoteBenchmarkDir = configJson.get('remoteBenchmarkDir')
+    if (remoteBenchmarkDir == None) :
+        remoteBenchmarkDir = ""
+
     if(netdev != None):
         execStr = execStr + " -netdev {},hostfwd=tcp::{}-:22".format(netdev,portNumber)
     
@@ -113,18 +125,18 @@ def main():
     if(drive != None and driveParam != None):
         execStr = execStr + " -drive file={}/{},{}".format(imgDir, drive,driveParam)
     
+
     #print(execStr)
     #os.system(execStr+"&")
     password = imgConfigJson.get('password')
     username = imgConfigJson.get('username')
-    passFileName = "password.txt"
-    passfile = open(passFileName, "a")
-    passfile.write(password)
-    passfile.close()
     #ssh qsim@0.0.0.0 -p 2222
-    sshExec = "sshpass -f  {} ssh {}@0.0.0.0 -p {}".format(passFileName, username,portNumber)
+    #sshExec = "sshpass -p  {} ssh {}@0.0.0.0 -p {}".format(password, username,portNumber)
     #print(sshExec)
-    os.system(sshExec)
+    #os.system(sshExec)
+    scpExec = "sshpass -p  {} scp -P {} -r {} {}@0.0.0.0:{}".format(password, portNumber, benchmarkPath, username, remoteBenchmarkDir)
+    #print(scpExec)
+    os.system(scpExec)
 if __name__ == "__main__":
     args = parser.parse_args()
     args.func(args)

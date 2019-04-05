@@ -1,0 +1,3 @@
+
+example invocation:
+python run.py --imgconfig arm64Images/config.json --benchmark testDir/
