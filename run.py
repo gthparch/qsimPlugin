@@ -100,7 +100,7 @@ def main():
 
     netdev = configJson.get('netdev')
     portNumber = configJson.get('portNumber')
-    if(portNumber == None):
+    if(portNumber is None):
         portNumber = 2222
     else:
         try:
@@ -110,11 +110,11 @@ def main():
             return
     
     remoteBenchmarkDir = configJson.get('remoteBenchmarkDir')
-    if (remoteBenchmarkDir == None) :
+    if (remoteBenchmarkDir is None) :
         remoteBenchmarkDir = ""
 
     remotescriptExec = configJson.get('remotescriptExec')
-    if (remotescriptExec == None) :
+    if (remotescriptExec is None) :
         remotescriptExec = "runner.sh"
 
     if(netdev != None):
