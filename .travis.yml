@@ -6,4 +6,4 @@ before_script:
 script:
 - make -C qemu/plugins/qsimPlugin
 - make -C qemu/plugins/testPlugin
-- make -C debugTool && make debugTool/testcases
+- make -C debugTool && make -C debugTool/testcases
