@@ -6,10 +6,12 @@ if [ ! -d buildDirx86 ]; then
 		echo "buildDirX86 dir created"
 		mkdir buildDirX86
 fi
-if [ ! -d qemu ]; then
-    git clone https://github.com/farzonl/qemu.git
-    git checkout feature/qsim_plugin
-fi
+git submodule init
+git submodule update
+#if [ ! -d qemu ]; then
+#    git clone https://github.com/gthparch/qemu.git
+#    git checkout feature/qsim_plugin
+#fi
 cd buildDirARM64
  ../qemu/configure --target-list=aarch64-softmmu --enable-plugins
  make -j 4 &

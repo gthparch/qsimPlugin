@@ -1,4 +1,3 @@
-qemu/
 *Images/*.img
 *Images/vmlinuz
 buildDirARM64/
