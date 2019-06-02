@@ -3,4 +3,4 @@ qemu/
 *Images/vmlinuz
 buildDirARM64/
 buildDirX86/
-
+*.log
