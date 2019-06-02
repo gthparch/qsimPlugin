@@ -11,7 +11,7 @@ CFLAGS := $(INCPATH) $(LIBPATH) $(OPTIONS)
 #_____________STATIC STUFF________________________________________________
 
 #Small enough project so lets rebuild everytime
-run : release
+run : build-release
 	./$(EXE)
 
 run-debug : build-debug
